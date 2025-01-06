@@ -52,7 +52,7 @@ def place_order(request: OrderRequest):
             if asset["asset"] == "USDT":
                 usdt = round(float(asset["balance"]), 2)
 
-        quantity = round((usdt * leverage) / price, 2)
+        quantity = round((usdt * leverage) / price)
 
         order = client.new_order(
             symbol=request.symbol,
