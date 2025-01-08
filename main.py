@@ -152,10 +152,10 @@ def close_last_position(symbol: str):
 
 
                 new_balance = get_balance()
-                pnl = new_balance - last_balance
+                pnl = round(new_balance - last_balance, 2)
                 msg_pnl = f"Last position {symbol} closed successfully."
                 if new_balance > last_balance:
-                    msg_pnl += f"\n\n 💸PROFIT: {pnl}"
+                    msg_pnl += f"\n\n 🎉 PROFIT: {pnl}"
                 else:
                     msg_pnl += f"\n\n 😭LOSS: {pnl}"
                 
