@@ -160,7 +160,7 @@ def close_last_position(symbol: str):
                     msg_pnl += f"\n\n 😭LOSS: {pnl}"
                 
                 send_telegram_notification(msg_pnl)
-                return {"message": msg_pnl}
+                return {"message": msg_pnl, "pnl": pnl}
         return {"message": "No position found to close."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
