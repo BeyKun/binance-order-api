@@ -43,14 +43,9 @@ async def authenticate_request(request: Request, call_next):
 def place_order(request: OrderRequest):
     """Membuka posisi order baru."""
     try:
-        balance = client.balance()
-        usdt = 0
+        usdt = get_balance()
         leverage = 5
         price = ticker_price(request.symbol)
-
-        for asset in balance:
-            if asset["asset"] == "USDT":
-                usdt = round(float(asset["balance"]), 2)
 
         quantity = round((usdt * leverage) / price)
 
@@ -127,12 +122,26 @@ def send_telegram_notification(message: str):
     requests.post(url, body)
     print(message)
 
+def get_balance():
+    try:
+        balance = client.balance()
+        usdt = 0
+
+        for asset in balance:
+            if asset["asset"] == "USDT":
+                usdt = round(float(asset["balance"]), 2)
+
+        return usdt
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/close_last_position/{symbol}")
 def close_last_position(symbol: str):
     """Menutup posisi terakhir yang terbuka untuk simbol tertentu."""
     try:
         positions = client.get_position_risk()
+        last_balance = get_balance()
         for position in positions:
             if position["symbol"] == symbol and float(position["positionAmt"]) != 0:
                 side = position["positionSide"]
@@ -140,7 +149,18 @@ def close_last_position(symbol: str):
                     close_order(OrderRequest(symbol=symbol, side="SELL", position_side="LONG"))
                 elif side == "SHORT":
                     close_order(OrderRequest(symbol=symbol, side="BUY", position_side="SHORT"))
-                return {"message": "Last position closed successfully."}
+
+
+                new_balance = get_balance()
+                pnl = new_balance - last_balance
+                msg_pnl = f"Last position {symbol} closed successfully."
+                if new_balance > last_balance:
+                    msg_pnl += f"\n\n 💸PROFIT: {pnl}"
+                else:
+                    msg_pnl += f"\n\n 😭LOSS: {pnl}"
+                
+                send_telegram_notification(msg_pnl)
+                return {"message": msg_pnl}
         return {"message": "No position found to close."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
