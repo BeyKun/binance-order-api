@@ -122,6 +122,16 @@ def ticker_price(symbol: str) -> float:
     return get_rounded_price(symbol, float(ticker["price"]))
 
 
+@app.get("/positions/{symbol}")
+def ticker_price(symbol: str) -> float:
+    positions = client.get_position_risk()
+    for position in positions:
+        if position["symbol"] == symbol:
+            return {"positions": position}
+        
+    return {"positions": None}
+
+
 def get_tick_size(symbol: str) -> float:
     """Mengambil ukuran tick untuk simbol tertentu."""
     info = client.exchange_info()
