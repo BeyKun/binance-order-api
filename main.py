@@ -34,6 +34,10 @@ class LimitOrderRequest(BaseModel):
     quantity: float
     price: float
 
+class CancelOrderRequest(BaseModel):
+    symbol: str
+    order_id: str
+
 # Middleware untuk autentikasi API Key dan Secret
 @app.middleware("http")
 async def authenticate_request(request: Request, call_next):
@@ -125,11 +129,52 @@ def ticker_price(symbol: str):
 @app.get("/positions/{symbol}")
 def positions(symbol: str):
     positions = client.get_position_risk()
+    symbol_positions = []
     for position in positions:
         if position["symbol"] == symbol:
-            return {"positions": position}
+            symbol_positions.append(position)
         
-    return {"positions": []}
+    return {"positions": symbol_positions}
+
+@app.post("/cancel_order")
+def cancel_order(request: CancelOrderRequest):
+    try:
+        order = client.cancel_order(symbol=request.symbol, orderId=request.order_id)
+        
+        return {"message": "Order canceled successfully", "order": order}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/close_last_position/{symbol}")
+def close_last_position(symbol: str):
+    """Menutup posisi terakhir yang terbuka untuk simbol tertentu."""
+    try:
+        positions = client.get_position_risk()
+        last_balance = get_balance()
+        for position in positions:
+            if position["symbol"] == symbol and float(position["positionAmt"]) != 0:
+                side = position["positionSide"]
+                if side == "LONG":
+                    close_order(OrderRequest(symbol=symbol, side="SELL", position_side="LONG"))
+                elif side == "SHORT":
+                    close_order(OrderRequest(symbol=symbol, side="BUY", position_side="SHORT"))
+
+
+                new_balance = get_balance()
+                pnl = round(new_balance - last_balance, 2)
+                msg_pnl = f"Last position {symbol} closed successfully."
+                if new_balance > last_balance:
+                    msg_pnl += f"\n\n 🎉 PROFIT: {pnl}"
+                else:
+                    msg_pnl += f"\n\n 😭LOSS: {pnl}"
+                
+                send_telegram_notification(msg_pnl)
+                return {"message": msg_pnl, "pnl": pnl}
+        return {"message": "No position found to close."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 
 def get_tick_size(symbol: str) -> float:
@@ -171,31 +216,3 @@ def get_balance():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/close_last_position/{symbol}")
-def close_last_position(symbol: str):
-    """Menutup posisi terakhir yang terbuka untuk simbol tertentu."""
-    try:
-        positions = client.get_position_risk()
-        last_balance = get_balance()
-        for position in positions:
-            if position["symbol"] == symbol and float(position["positionAmt"]) != 0:
-                side = position["positionSide"]
-                if side == "LONG":
-                    close_order(OrderRequest(symbol=symbol, side="SELL", position_side="LONG"))
-                elif side == "SHORT":
-                    close_order(OrderRequest(symbol=symbol, side="BUY", position_side="SHORT"))
-
-
-                new_balance = get_balance()
-                pnl = round(new_balance - last_balance, 2)
-                msg_pnl = f"Last position {symbol} closed successfully."
-                if new_balance > last_balance:
-                    msg_pnl += f"\n\n 🎉 PROFIT: {pnl}"
-                else:
-                    msg_pnl += f"\n\n 😭LOSS: {pnl}"
-                
-                send_telegram_notification(msg_pnl)
-                return {"message": msg_pnl, "pnl": pnl}
-        return {"message": "No position found to close."}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
