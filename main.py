@@ -129,7 +129,7 @@ def positions(symbol: str):
         if position["symbol"] == symbol:
             return {"positions": position}
         
-    return {"positions": None}
+    return {"positions": []}
 
 
 def get_tick_size(symbol: str) -> float:
