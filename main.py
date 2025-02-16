@@ -123,7 +123,7 @@ def ticker_price(symbol: str) -> float:
 
 
 @app.get("/positions/{symbol}")
-def ticker_price(symbol: str) -> float:
+def positions(symbol: str):
     positions = client.get_position_risk()
     for position in positions:
         if position["symbol"] == symbol:
