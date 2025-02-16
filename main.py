@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from binance.um_futures import UMFutures
 from binance.helpers import round_step_size
+from binance.enums import *
 
 # Konfigurasi API Binance
 API_KEY='your_binance_api_key'
@@ -24,7 +25,14 @@ class OrderRequest(BaseModel):
     symbol: str
     side: str
     position_side: str
+    quantity: float
 
+class LimitOrderRequest(BaseModel):
+    symbol: str
+    side: str
+    position_side: str
+    quantity: float
+    price: float
 
 # Middleware untuk autentikasi API Key dan Secret
 @app.middleware("http")
@@ -43,24 +51,41 @@ async def authenticate_request(request: Request, call_next):
 def place_order(request: OrderRequest):
     """Membuka posisi order baru."""
     try:
-        usdt = get_balance()
-        leverage = 5
-        price = ticker_price(request.symbol)
+        # usdt = get_balance()
+        # leverage = 5
+        # price = ticker_price(request.symbol)
 
-        quantity = round((usdt * leverage) / price)
+        # quantity = round((usdt * leverage) / price)
 
         order = client.new_order(
             symbol=request.symbol,
             side=request.side,
-            type="MARKET",
+            type=ORDER_TYPE_MARKET,
             positionSide=request.position_side,
-            quantity=quantity
+            quantity=request.quantity
         )
         send_telegram_notification(f'{request.side} Order placed successfully!')
         return {"message": "Order placed successfully", "order": order}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/place_limit_order")
+def place_liomit_order(request: LimitOrderRequest):
+    """Membuka posisi order baru."""
+    try:
+        order = client.new_order(
+            symbol=request.symbol,
+            side=request.side,
+            type=ORDER_TYPE_LIMIT,
+            positionSide=request.position_side,
+            quantity=request.quantity,
+            price=get_rounded_price(request.symbol, request.price),
+            timeInForce=TIME_IN_FORCE_GTC
+        )
+        send_telegram_notification(f'{request.side} Order placed successfully!')
+        return {"message": "Order placed successfully", "order": order}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/close_order")
 def close_order(request: OrderRequest):
