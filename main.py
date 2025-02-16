@@ -116,10 +116,10 @@ def close_order(request: OrderRequest):
 
 
 @app.get("/ticker_price/{symbol}")
-def ticker_price(symbol: str) -> float:
+def ticker_price(symbol: str):
     """Mengambil harga ticker terbaru untuk simbol tertentu."""
     ticker = client.ticker_price(symbol=symbol)
-    return get_rounded_price(symbol, float(ticker["price"]))
+    return {'price': get_rounded_price(symbol, float(ticker["price"]))}
 
 
 @app.get("/positions/{symbol}")
