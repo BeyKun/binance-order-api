@@ -140,7 +140,7 @@ def positions(symbol: str):
 def cancel_order(request: CancelOrderRequest):
     try:
         order = client.cancel_order(symbol=request.symbol, orderId=request.order_id)
-        
+        send_telegram_notification(f'{request.side} Order canceled successfully!')
         return {"message": "Order canceled successfully", "order": order}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
