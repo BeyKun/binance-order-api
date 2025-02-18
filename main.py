@@ -36,7 +36,7 @@ class LimitOrderRequest(BaseModel):
 
 class CancelOrderRequest(BaseModel):
     symbol: str
-    order_id: str
+    order_id: int
 
 # Middleware untuk autentikasi API Key dan Secret
 @app.middleware("http")
