@@ -174,7 +174,13 @@ def close_last_position(symbol: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
+@app.get("/open_orders/{symbol}")
+def positions(symbol: str):
+    try:
+        orders = client.get_orders(symbol=symbol)    
+        return {"orders": orders}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def get_tick_size(symbol: str) -> float:
