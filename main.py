@@ -68,8 +68,8 @@ def place_order(request: OrderRequest):
             positionSide=request.position_side,
             quantity=request.quantity
         )
-        send_telegram_notification(f'{request.side} Order placed successfully!')
-        return {"message": "Order placed successfully", "order": order}
+        send_telegram_notification(f'{request.side} {request.symbol} Order placed successfully!')
+        return {"message": f"{request.side} {request.symbol} Order placed successfully", "order": order}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -86,8 +86,8 @@ def place_liomit_order(request: LimitOrderRequest):
             price=get_rounded_price(request.symbol, request.price),
             timeInForce=TIME_IN_FORCE_GTC
         )
-        send_telegram_notification(f'{request.side} Order placed successfully!')
-        return {"message": "Order placed successfully", "order": order}
+        send_telegram_notification(f'{request.side} {request.symbol} Order placed successfully!')
+        return {"message": f"{request.side} {request.symbol} Order placed successfully", "order": order}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -113,8 +113,8 @@ def close_order(request: OrderRequest):
             positionSide=request.position_side,
             quantity=position_amt
         )
-        send_telegram_notification(f'{request.side} Order closed successfully!')
-        return {"message": "Order closed successfully", "order": order}
+        send_telegram_notification(f'{request.side} {request.symbol} Order closed successfully!')
+        return {"message": f"{request.side} {request.symbol} Order closed successfully", "order": order}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -140,8 +140,8 @@ def positions(symbol: str):
 def cancel_order(request: CancelOrderRequest):
     try:
         order = client.cancel_order(symbol=request.symbol, orderId=request.order_id)
-        send_telegram_notification('Order canceled successfully!')
-        return {"message": "Order canceled successfully", "order": order}
+        send_telegram_notification(f"{request.symbol} Order canceled successfully!")
+        return {"message": f"{request.symbol} Order canceled successfully", "order": order}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
