@@ -182,6 +182,12 @@ def positions(symbol: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/account")
+def account():
+    try:
+        return client.account()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 def get_tick_size(symbol: str) -> float:
     """Mengambil ukuran tick untuk simbol tertentu."""
