@@ -188,6 +188,12 @@ def account():
         return client.account()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/webhook-trading-view")
+async def webhook(request: Request):
+    data = await request.body()
+    send_telegram_notification(data)
+    return data
 
 def get_tick_size(symbol: str) -> float:
     """Mengambil ukuran tick untuk simbol tertentu."""
