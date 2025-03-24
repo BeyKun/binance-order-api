@@ -41,6 +41,9 @@ class CancelOrderRequest(BaseModel):
 # Middleware untuk autentikasi API Key dan Secret
 @app.middleware("http")
 async def authenticate_request(request: Request, call_next):
+    if request.url.path == "/webhook-trading-view":
+        return await call_next(request)
+
     api_key = request.headers.get("x-api-key")
     api_secret = request.headers.get("x-api-secret")
 
