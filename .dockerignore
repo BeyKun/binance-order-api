@@ -1,0 +1,6 @@
+# Ignore everything in this directory
+*
+
+# Except for the following directories and files
+!Dockerfile
+!main.py

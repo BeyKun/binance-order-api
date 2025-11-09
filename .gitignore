@@ -1,0 +1,64 @@
+# Ignore local settings files
+local_settings.py
+*.local
+local_settings/
+
+
+# Ignore virtualenv environment
+.venv
+env
+venv
+
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+
+
+# Ignore static files
+static/
+static/**/*
+
+
+# Ignore build files
+build/
+build/**/*
+
+
+# Ignore coverage files
+coverage.xml
+htmlcov/
+htmlcov/**/*
+
+
+# Ignore .DS_Store files
+.DS_Store
+
+
+# Ignore .env files
+.env
+
+
+# Ignore .egg files
+*.egg
+
+
+# Ignore .log files
+*.log
+
+
+# Ignore .sqlite files
+*.sqlite
+
+
+# Ignore .swp files
+*.swp
+
+
+# Ignore .vs files
+.vs/
+
+
+# Ignore .vscode files
+.vscode/

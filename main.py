@@ -5,20 +5,27 @@ from binance.um_futures import UMFutures
 from binance.helpers import round_step_size
 from binance.enums import *
 
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
+
 # Konfigurasi API Binance
-API_KEY='your_binance_api_key'
-API_SECRET='your_binance_api_secret'
+API_KEY = os.getenv('BINANCE_API_KEY')
+API_SECRET = os.getenv('BINANCE_API_SECRET')
+
+# Konfigurasi API Key dan Secret untuk autentikasi
+VALID_API_KEY = os.getenv('VALID_API_KEY')
+VALID_API_SECRET = os.getenv('VALID_API_SECRET')
+
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
 client = UMFutures(key=API_KEY, secret=API_SECRET)
 
 # Inisialisasi FastAPI
 app = FastAPI()
 
-# Konfigurasi API Key dan Secret untuk autentikasi
-VALID_API_KEY = "your_valid_api_key"
-VALID_API_SECRET = "your_valid_api_secret"
-
-TELEGRAM_TOKEN="your_telegram_bot_token"
-TELEGRAM_CHAT_ID="your_telegram_chat_id"
 
 # Model untuk permintaan API
 class OrderRequest(BaseModel):
@@ -157,10 +164,11 @@ def close_last_position(symbol: str):
         for position in positions:
             if position["symbol"] == symbol and float(position["positionAmt"]) != 0:
                 side = position["positionSide"]
+                quantity = abs(float(position["positionAmt"]))
                 if side == "LONG":
-                    close_order(OrderRequest(symbol=symbol, side="SELL", position_side="LONG"))
+                    close_order(OrderRequest(symbol=symbol, side="SELL", position_side="LONG", quantity=quantity))
                 elif side == "SHORT":
-                    close_order(OrderRequest(symbol=symbol, side="BUY", position_side="SHORT"))
+                    close_order(OrderRequest(symbol=symbol, side="BUY", position_side="SHORT", quantity=quantity))
 
 
                 new_balance = get_balance()
