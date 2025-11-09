@@ -4,3 +4,4 @@
 # Except for the following directories and files
 !Dockerfile
 !main.py
+!requirements.txt
