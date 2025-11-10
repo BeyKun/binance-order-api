@@ -40,6 +40,7 @@ class LimitOrderRequest(BaseModel):
     position_side: str
     quantity: float
     price: float
+    type: str
 
 class CancelOrderRequest(BaseModel):
     symbol: str
@@ -90,10 +91,11 @@ def place_liomit_order(request: LimitOrderRequest):
         order = client.new_order(
             symbol=request.symbol,
             side=request.side,
-            type=ORDER_TYPE_LIMIT,
+            type=request.type,
             positionSide=request.position_side,
             quantity=request.quantity,
             price=get_rounded_price(request.symbol, request.price),
+            stopPrice=get_rounded_price(request.symbol, request.price),
             timeInForce=TIME_IN_FORCE_GTC
         )
         send_telegram_notification(f'{request.side} {request.symbol} Order placed successfully!')
