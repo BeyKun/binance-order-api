@@ -88,15 +88,23 @@ def place_order(request: OrderRequest):
 def place_liomit_order(request: LimitOrderRequest):
     """Membuka posisi order baru."""
     try:
+        stopPrice = {
+            "stopPrice": get_rounded_price(request.symbol, request.price)
+        }
+        price = {
+            "price": get_rounded_price(request.symbol, request.price)
+        }
+
+        orderPrice = stopPrice if request.type == 'STOP_MARKET' else price
+
         order = client.new_order(
             symbol=request.symbol,
             side=request.side,
             type=request.type,
             positionSide=request.position_side,
             quantity=request.quantity,
-            price=get_rounded_price(request.symbol, request.price),
-            stopPrice=get_rounded_price(request.symbol, request.price),
-            timeInForce=TIME_IN_FORCE_GTC
+            timeInForce=TIME_IN_FORCE_GTC,
+            **orderPrice
         )
         send_telegram_notification(f'{request.side} {request.symbol} Order placed successfully!')
         return {"message": f"{request.side} {request.symbol} Order placed successfully", "order": order}
